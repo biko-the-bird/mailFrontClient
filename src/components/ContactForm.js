@@ -9,7 +9,8 @@ class ContactForm extends Component {
       recipient: '',
       email: '',
       message: '',
-      attachments: []
+      attachments: [],
+      subject: ''
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -22,9 +23,9 @@ class ContactForm extends Component {
   async handleSubmit(e) {
     e.preventDefault();
     console.log("submitting");
-    const { recipient, email, message, attachments } = this.state;
+    const { recipient, email, message, attachments, subject } = this.state;
     const form = await axios.post('/api/form', {
-      recipient, email, message, fileName: attachments[0].name
+      recipient, email, message, fileName: attachments[0].name, subject
     })
   }
   fileInputClick() {
@@ -37,26 +38,25 @@ class ContactForm extends Component {
     var formData = new FormData();
     formData.append("image", file);
     axios.post('/api/upload_file', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-    }).then(() => {
-    console.log("file here", file);
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function () {
-      const b64File = reader.result;
-      thisS.setState({
-        attachments: [{
-          file: file,
-          data: b64File,
-          name: file.name
-        }, ...thisS.state.attachments]
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
+    }).then(() => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function () {
+        const b64File = reader.result;
+        thisS.setState({
+          attachments: [{
+            file: file,
+            data: b64File,
+            name: file.name
+          }, ...thisS.state.attachments]
+        }
 
-      )
-    }
-  })
+        )
+      }
+    })
   }
 
   render() {
@@ -65,17 +65,49 @@ class ContactForm extends Component {
       <Form onSubmit={this.handleSubmit} className="container">
 
         <FormGroup>
-          <Label for="recipient">Recipients</Label>
-          <Input type="email" name="recipient" id="recipient" placeholder="Add Recipients Email" onChange={this.handleChange} />
+          <Input type="email"
+            name="recipient"
+            id="recipient"
+            placeholder="Add Recipients Email"
+            onChange={this.handleChange}
+            style={{
+              borderTop: 'none',
+              borderRight: 'none',
+              borderLeft: 'none',
+              borderRadius: '0'
+            }}
+          />
+          <Input type="text"
+            name="subject"
+            id="subject"
+            placeholder="Subject"
+            onChange={this.handleChange}
+            style={{
+              borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderRadius: '0'
+            }}
+          />
         </FormGroup>
         <FormGroup>
-          <Label for="message">Add Body Text</Label>
-          <Input type="textarea" name="message" id="message" onChange={this.handleChange} />
+          <Input type="textarea"
+            name="message"
+            id="message"
+            placeholder='Add body text'
+            onChange={this.handleChange}
+            style={{
+              borderTop: 'none', 
+              resize: 'none',
+              height: '7em', 
+              borderRight: 'none', 
+              borderLeft: 'none', 
+              borderRadius: '0'
+            }}
+          />
         </FormGroup>
         <hr />
-        <div onClick={this.fileInputClick} style={{ float: 'left' }}>Add Attachments
+
+        <div onClick={this.fileInputClick} style={{ float: 'left', color: 'grey' }}>Add Attachments
         <input style={{ display: 'none' }} type="file" accept="image/*"
-            onChange={this.fileHandler} id="attachmentFileInput" name="attachmentFileInput"/>
+            onChange={this.fileHandler} id="attachmentFileInput" name="attachmentFileInput" />
           <ul>
             {attachments.map(item => {
               return <li>{item.name}</li>
@@ -84,7 +116,10 @@ class ContactForm extends Component {
           </ul>
         </div>
         <br />
-        <Button style={{ float: 'right' }}>send out mail</Button>
+        <br />
+        <br />
+        <br />
+        <button style={{ float: 'right', borderColor: 'grey', backgroundColor: 'white', borderWidth: '1px', borderStyle: 'solid' }}><span style={{ color: 'grey' }}>send out-mail</span></button>
         <br />
         <br />
         <p style={{ textAlign: 'center', color: 'grey' }}>out bound TO ANY mail service</p>
